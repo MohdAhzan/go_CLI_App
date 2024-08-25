@@ -1,10 +1,10 @@
 package main
 
 import (
-  "time"
 	"bufio"
 	"fmt"
 	"os"
+  "sync"
 )
 
 func main(){
@@ -20,19 +20,34 @@ func main(){
 
 func start()error{
 
+  fmt.Print("MyApp >  ")
+
   scanner:=bufio.NewScanner(os.Stdin)
+  wg:=  &sync.WaitGroup{}
 
   for scanner.Scan(){
     command:=scanner.Text()
+    
+    if command == "-exit"{
 
-    data,err:=commandEvents(command)
+      return nil
+    }
+    data,err:=commandEvents(command,wg)
+  wg.Done()
     if err!=nil{
       return err 
     }
+    wg.Wait()
+    if data.callback!=nil{
+      
+        data.callback()
+      
+    }
 
-    fmt.Print(data.name,data.description,data.callback())
-
-    time.Sleep(time.Second*3)
+    
+  
+    fmt.Println(data.name," ")
+    fmt.Println(data.description," ")
   }
 
   return nil
@@ -48,35 +63,48 @@ var events = map[string]CliCommand{}
 
 func initialize(){
   
-  fmt.Print("here reaches")
 
-  events["-h"]=CliCommand{
-    name : "help\n",
-    description : "Displays help message here . FOR now please help mee\n",
+  events["-help"]=CliCommand{
+    name : "Welcome to MyApp!!\n",
+    description : "-help :  Lists help \n-exit : Exit from My App\nHit the <space> and Get a Wish",
     callback: commandHelp,
   }
-  events["help"]=CliCommand{
-    name : "help\n",
+  events["-exit"]=CliCommand{
+    name : "\n",
     description : "Displays help message here . FOR now please help mee\n",
-    callback: commandHelp,
+    callback: cmdExit,
   }
+   
 
 }
+
+func cmdExit()error{
+    
+  return nil 
+}
+
+
 func commandHelp()error{
   
-  fmt.Println("nothing for now")
+
+  fmt.Println("use -<options> to run commands \nuse -help for Help")
   return nil
 }
 
-func  commandEvents(command string)(CliCommand,error){
-  
-  if command==""{
-  
-    return CliCommand{},fmt.Errorf("Invalid command... MotherF**ker")
-  }
-  
-  data:=events[command]
 
+func  commandEvents(command string,wg *sync.WaitGroup)(CliCommand,error){
+ 
+  wg.Add(1)
+  if command==" "{
+    return CliCommand{name: "Surprise... MTF**ker....",description: "",callback: nil, },nil
+  }
+
+  data,ok:=events[command]
+  if !ok{
+    return CliCommand{name: "Invalid Command ;)\n",description: "",callback:commandHelp, },nil
+  }
+ 
+  
 
   return data,nil
 
