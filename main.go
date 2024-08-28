@@ -3,22 +3,44 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
-  "sync"
+	"sync"
+
+	clientDb "github.com/MohdAhzan/go_CLI_App/db"
+	"github.com/MohdAhzan/go_CLI_App/models"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func main(){
-  initialize() 
-  
-    err:=start()
-    if err !=nil{
-      fmt.Println(err)
+
+
+  err:=start()
+  if err !=nil{
+    fmt.Println(err)
 
   }
+
+
 }
 
 
+
 func start()error{
+
+  db,err:=clientDb.ConnectDB()
+  if err!=nil{
+    fmt.Println("error here in connecting ")
+    log.Fatal(err)
+  }
+
+
+  if err=clientDb.AddAppCmd(db);err!=nil{
+    fmt.Println("error here")
+    log.Fatal(err)
+
+  }
+
 
   fmt.Print("MyApp >  ")
 
@@ -27,85 +49,61 @@ func start()error{
 
   for scanner.Scan(){
     command:=scanner.Text()
-    
+
     if command == "-exit"{
 
       return nil
     }
-    data,err:=commandEvents(command,wg)
-  wg.Done()
+    data,err:=commandEvents(command,wg,db)
+    wg.Done()
     if err!=nil{
       return err 
     }
     wg.Wait()
-    if data.callback!=nil{
-      
-        data.callback()
-      
-    }
+    // if len(data.Callback)>0{
+    //
+    //   if data.Callback==command{
+    //
+    //
+    //
+    //   } 
+    //
+    // }
 
-    
-  
-    fmt.Println(data.name," ")
-    fmt.Println(data.description," ")
+
+    fmt.Println(data.Name," ")
+    fmt.Println(data.Description," ")
   }
 
   return nil
 }
 
-type CliCommand struct{
-  name string
-  description string
-  callback func()error
-
-}
-var events = map[string]CliCommand{}
-
-func initialize(){
-  
-
-  events["-help"]=CliCommand{
-    name : "Welcome to MyApp!!\n",
-    description : "-help :  Lists help \n-exit : Exit from My App\nHit the <space> and Get a Wish",
-    callback: commandHelp,
-  }
-  events["-exit"]=CliCommand{
-    name : "\n",
-    description : "Displays help message here . FOR now please help mee\n",
-    callback: cmdExit,
-  }
-   
-
-}
-
-func cmdExit()error{
-    
-  return nil 
-}
 
 
-func commandHelp()error{
-  
+// need to get the data from mongo according to the users input commands 
 
-  fmt.Println("use -<options> to run commands \nuse -help for Help")
-  return nil
-}
-
-
-func  commandEvents(command string,wg *sync.WaitGroup)(CliCommand,error){
- 
+func  commandEvents(command string,wg *sync.WaitGroup,db *mongo.Database)(models.CliCommand,error){
+  //
   wg.Add(1)
-  if command==" "{
-    return CliCommand{name: "Surprise... MTF**ker....",description: "",callback: nil, },nil
-  }
+  //   if command==" "{
+  //     return models.CliCommand{Name: "Surprise... MTF**ker....",Description: "",Callback: nil, },nil
+  //   }
+  //
 
-  data,ok:=events[command]
-  if !ok{
-    return CliCommand{name: "Invalid Command ;)\n",description: "",callback:commandHelp, },nil
-  }
- 
+  coll:=db.Collection("Clicommand")  
+    
   
-
+  data,err:= clientDb.FetchData(coll,command)
+  if err!=nil{
+    return models.CliCommand{},err
+  }
+  // data,ok:=models.Events[command]
+  // if !ok{
+  //   return models.CliCommand{Name: "Invalid Command ;)\n",Description: "",Callback:"commandHelp", },nil
+  // }
+  //
+  //
+  //
   return data,nil
 
 }
