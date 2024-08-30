@@ -7,8 +7,8 @@ import (
 	"os"
 	"sync"
 
+	 "github.com/MohdAhzan/go_CLI_App/utils"
 	clientDb "github.com/MohdAhzan/go_CLI_App/db"
-	"github.com/MohdAhzan/go_CLI_App/models"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -30,7 +30,7 @@ func start()error{
 
   db,err:=clientDb.ConnectDB()
   if err!=nil{
-    fmt.Println("error here in connecting ")
+    fmt.Println("error here in connecting database ")
     log.Fatal(err)
   }
 
@@ -49,15 +49,13 @@ func start()error{
 
   for scanner.Scan(){
     command:=scanner.Text()
-
-    if command == "-exit"{
-
-      return nil
-    }
+    
     data,err:=commandEvents(command,wg,db)
     wg.Done()
     if err!=nil{
-      return err 
+ 
+      fmt.Println(err)
+      // return err 
     }
     wg.Wait()
     // if len(data.Callback)>0{
@@ -82,7 +80,7 @@ func start()error{
 
 // need to get the data from mongo according to the users input commands 
 
-func  commandEvents(command string,wg *sync.WaitGroup,db *mongo.Database)(models.CliCommand,error){
+func  commandEvents(command string,wg *sync.WaitGroup,db *mongo.Database)(utils.CliCommand,error){
   //
   wg.Add(1)
   //   if command==" "{
@@ -95,15 +93,11 @@ func  commandEvents(command string,wg *sync.WaitGroup,db *mongo.Database)(models
   
   data,err:= clientDb.FetchData(coll,command)
   if err!=nil{
-    return models.CliCommand{},err
+    return utils.CliCommand{},err
   }
-  // data,ok:=models.Events[command]
-  // if !ok{
-  //   return models.CliCommand{Name: "Invalid Command ;)\n",Description: "",Callback:"commandHelp", },nil
-  // }
-  //
-  //
-  //
+
+      
+
   return data,nil
 
 }

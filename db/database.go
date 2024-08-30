@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/MohdAhzan/go_CLI_App/models"
+	"github.com/MohdAhzan/go_CLI_App/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -52,7 +52,6 @@ func checkDbCollection(db *mongo.Database,collectionName string) (bool,error){
 }
 
 
-
 func AddAppCmd(db *mongo.Database)error{
 
   exists,err :=checkDbCollection(db,"Clicommand")
@@ -61,24 +60,30 @@ func AddAppCmd(db *mongo.Database)error{
   }
   if !exists{
 
-    models.Events = map[string]models.CliCommand{
-      "-help": {
-        Key: "-help",
+   utils.Events = map[string]utils.CliCommand{
+      "help": {
+        Key: "help",
         Name:        "Welcome to MyApp!!\n",
-        Description: "-help : Lists help \n-exit : Exit from My App\nHit the <space> and Get a Wish",
+        Description: "help : Lists help \n-exit : Exit from My App\nHit the <space> and Get a Wish",
         Callback:    "commandHelp",
       },
-      "-exit": {
+      "exit": {
         Key: "-exit",
-        Name:        "\n",
-        Description: "Displays help message here. FOR now please help me\n",
+        Name:        "",
+        Description: "",
         Callback:    "cmdExit",
+      },
+      "clear": {
+        Key: "clear",
+        Name: "",
+        Description: "",
+        Callback:    "cmdClear",
       },
     }
 
     coll:=db.Collection("Clicommand")
 
-    for _,cmd:=range models.Events{
+    for _,cmd:=range utils.Events{
 
       res, err:=coll.InsertOne(context.TODO(),cmd)
       if err!=nil{
@@ -95,20 +100,33 @@ func AddAppCmd(db *mongo.Database)error{
   return nil
 
 }
-func FetchData (DB *mongo.Collection,command string)(models.CliCommand,error){
+func FetchData (DB *mongo.Collection,command string)(utils.CliCommand,error){
 
   ctx,cancel:=context.WithTimeout(context.Background(),time.Second*5) 
   defer cancel() 
-  var data models.CliCommand
+  var data utils.CliCommand
 
 
   filter:= bson.D{
     {Key:"key",Value:command},
   }
 
+
   err:=DB.FindOne(ctx,filter).Decode(&data)
   if err!=nil{
-    return models.CliCommand{},fmt.Errorf("Invalid Command... Try '-help' ")
+    return utils.CliCommand{},fmt.Errorf("Invalid Command... Try '-help' ")
+  }
+  if data.Callback!=""{
+    
+    callbackFunc:=utils.CallBackMap[data.Callback]
+   
+    err:=callbackFunc()     
+    if err!=nil{
+  
+        return utils.CliCommand{},fmt.Errorf("Error calling the callback functions",err)
+      
+    }
+         
   }
 
   return data ,nil
