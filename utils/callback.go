@@ -5,16 +5,21 @@ import(
   "os/exec"
   "fmt"
   "os"
+  "github.com/MohdAhzan/go_CLI_App/apps/todo"
+
 )
 
 //map the command corresponding to the functions
 var CallBackMap =  map[string]func()error{
 
-  "commandelp":CommandHelp,
+  "commandHelp":CommandHelp,
   "cmdExit":CmdExit,
   "cmdClear":ClearScreen,
+  "todo":todo.TodoStart,
 
 }
+
+
 
 
 func ClearScreen()error {

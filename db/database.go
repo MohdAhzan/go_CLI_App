@@ -63,12 +63,12 @@ func AddAppCmd(db *mongo.Database)error{
    utils.Events = map[string]utils.CliCommand{
       "help": {
         Key: "help",
-        Name:        "Welcome to MyApp!!\n",
-        Description: "help : Lists help \n-exit : Exit from My App\nHit the <space> and Get a Wish",
+        Name:        "You can run the MyApp using commands below:\n",
+        Description: "\thelp : Lists help \n\texit : Exit from My App\n\tHit the <space> and Get a Wish",
         Callback:    "commandHelp",
       },
       "exit": {
-        Key: "-exit",
+        Key: "exit",
         Name:        "",
         Description: "",
         Callback:    "cmdExit",
@@ -78,6 +78,12 @@ func AddAppCmd(db *mongo.Database)error{
         Name: "",
         Description: "",
         Callback:    "cmdClear",
+      },
+      "todo":{
+        Key: "todo",
+        Name: "",
+        Description: "",
+        Callback:    "todo",
       },
     }
 
@@ -114,8 +120,9 @@ func FetchData (DB *mongo.Collection,command string)(utils.CliCommand,error){
 
   err:=DB.FindOne(ctx,filter).Decode(&data)
   if err!=nil{
-    return utils.CliCommand{},fmt.Errorf("Invalid Command... Try '-help' ")
+    return utils.CliCommand{},fmt.Errorf("Invalid Command... Try 'help' ")
   }
+  // fmt.Println("dataa fetched",data)
   if data.Callback!=""{
     
     callbackFunc:=utils.CallBackMap[data.Callback]

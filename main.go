@@ -50,27 +50,19 @@ func start()error{
   for scanner.Scan(){
     command:=scanner.Text()
     
+   
     data,err:=commandEvents(command,wg,db)
     wg.Done()
     if err!=nil{
- 
       fmt.Println(err)
-      // return err 
     }
     wg.Wait()
-    // if len(data.Callback)>0{
-    //
-    //   if data.Callback==command{
-    //
-    //
-    //
-    //   } 
-    //
-    // }
-
+  
 
     fmt.Println(data.Name," ")
     fmt.Println(data.Description," ")
+  fmt.Print("MyApp >  ")
+
   }
 
   return nil
