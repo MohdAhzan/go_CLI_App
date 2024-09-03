@@ -24,7 +24,6 @@ var CallBackMap =  map[string]func()error{
 
 func ClearScreen()error {
   cmd := exec.Command("clear")
-  fmt.Println(cmd,"klsdfjkldsjfklsdjfldksjflsdlfkjldas")
   cmd.Stdout = os.Stdout
   err:=cmd.Run()
   if err!=nil{
