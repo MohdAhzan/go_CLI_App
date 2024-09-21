@@ -15,7 +15,8 @@ func TodoStart() error {
 		fmt.Scanln(&choice)
 
 		switch choice {
-		case 1:
+
+    case 1:
 			if err := addTask(); err != nil {
 				return (err)
 			}

@@ -15,6 +15,7 @@ var CallBackMap = map[string]func() error{
 	"cmdClear":    ClearScreen,
 	"todo":        todo.TodoStart,
 	"just":        todo.Just,
+  "ShowApps":    ShowApps,
 }
 
 func ClearScreen() error {
@@ -35,7 +36,12 @@ func CmdExit() error {
 }
 
 func CommandHelp() error {
-	fmt.Println("use -<options> to run commands \nuse -help for Help")
+	fmt.Println("\nuse <options> to run commands \nuse help for Help")
+	return nil
+}
+
+func ShowApps() error {
+	fmt.Print("\n\nuse <appname> to run Apps\n")
 	return nil
 }
 
